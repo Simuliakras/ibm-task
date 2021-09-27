@@ -6,19 +6,14 @@ const imageSchema = new mongoose.Schema({
     },
 
     labels: {
-        type: Array,
+        type: [String],
         required: true
     },
 
     path: {
         type: String,
         required: true
-    },
-
-    uploadDate: {
-        type: Date,
-        default: Date.now
     }
-});
+}, {timestamps:true});
  
 module.exports = new mongoose.model('Image', imageSchema);

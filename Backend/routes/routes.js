@@ -4,7 +4,8 @@ const controller = require("../controllers/upload");
 
 const routes = (app) => {
 
-    router.post("/upload", controller.upload);
+  router.post("/upload", controller.uploadImageData);
+  router.get("/", controller.getImageData);
   
     app.use(router);
   };

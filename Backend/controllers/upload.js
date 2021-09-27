@@ -1,23 +1,26 @@
 const uploadFile = require("../middleware/upload");
-const baseUrl = "http://localhost:8080/files/";
 const vision = require("@google-cloud/vision");
 const imageSchema = require("../models/imageModel");
 
+//Creating empty array for storing uploaded image labels
 let imageLabels = [];
 
-async function detectLabelsGCS(imagePath) {
-  // Creating client and importing json API key
+//Function for detecting and saving image labels to empty array
+async function detectLabels(imagePath) {
+  //Creating client and importing json API key
   const client = new vision.ImageAnnotatorClient({
     keyFilename: "./perfect-aura-326617-d02607de3239.json",
   });
 
-  // Performs label detection on the image file
+  //Performs label detection on the image file and pushing description elements to empty array
   const [result] = await client.labelDetection(imagePath);
-  imageLabels = result.labelAnnotations;
+  const labels = result.labelAnnotations;
+  labels.forEach((label) => imageLabels.push(label.description));
   console.log(imageLabels);
 }
 
-const upload = async (req, res) => {
+//Controller function for saving uploaded image details to database
+const uploadImageData = async (req, res) => {
   try {
     await uploadFile(req, res);
 
@@ -26,18 +29,25 @@ const upload = async (req, res) => {
     }
 
     const uploadedImagePath = req.file.path;
-    detectLabelsGCS(uploadedImagePath);
+    detectLabels(uploadedImagePath);
 
     const uploadedImage = new imageSchema({
       name: req.file.name,
-      labels: imageLabels.description,
-      path: uploadedImagePath
+      labels: imageLabels,
+      path: uploadedImagePath,
     });
 
-    uploadedImage.save()
-    .then(data => {
-        res.json(data)
-    })
+    uploadedImage
+      .save()
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((error) => {
+        res.json(error);
+      });
+    
+    imageLabels = [];
+
   } catch (err) {
     console.log(err);
 
@@ -53,6 +63,19 @@ const upload = async (req, res) => {
   }
 };
 
+const getImageData = (req, res) => {
+  
+  imageSchema.find() 
+  .then(result=>{ 
+  console.log('result: ',result) 
+  res.send(result.length>0?result:'No image details'); 
+  }) 
+  .catch(err=>{ 
+  console.log(err); 
+  }) 
+ } 
+
 module.exports = {
-  upload
+  uploadImageData,
+  getImageData,
 };

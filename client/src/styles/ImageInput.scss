@@ -1,0 +1,13 @@
+.image-input-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  *{
+      padding-right: 30px;
+  }
+
+  .hidden {
+    display: none;
+  }
+}
